@@ -5,6 +5,7 @@ self.addEventListener('install', event => {
         '/',
         'index.html',
         'assets/logo64.png',
+        'assets/ApplicationIcon.png'
       ]);
     })
   );
