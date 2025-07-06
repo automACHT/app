@@ -1,0 +1,15 @@
+{
+  "name": "Auto8",
+  "short_name": "Autom8",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "assets/logo64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}
