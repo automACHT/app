@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <p>Is this a PWA?</p> 
@@ -12,15 +12,21 @@
     <img src="assets/logo64.png" alt="Logo" width="64" height="64">
 
     <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('serviceworker.js')
-      .then(function(registration) {
-        console.log('Service Worker registered with scope:', registration.scope);
-      })
-      .catch(function(error) {
-        console.error('Service Worker registration failed:', error);
-      });
-  }
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration('serviceworker.js').then(function(registration) {
+        if (registration) {
+            console.log('Service Worker already registered with scope:', registration.scope);
+        } else {
+            navigator.serviceWorker.register('serviceworker.js')
+                .then(function(reg) {
+                    console.log('Service Worker registered with scope:', reg.scope);
+                })
+                .catch(function(error) {
+                    console.error('Service Worker registration failed:', error);
+                });
+        }
+    });
+}
 </script>
 </body>
 </html>
