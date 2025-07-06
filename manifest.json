@@ -10,6 +10,22 @@
       "src": "assets/logo64.png",
       "sizes": "64x64",
       "type": "image/png"
+    },
+    {
+        "src":"assets/applicationIcon.png",
+        "sizes": "150x150",
+        "type": "image/png",
+        "purpose": "any"
     }
-  ]
+  ],
+  "screenshots": [    
+   {
+
+     "src": "assets/applicationIcon.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Application"
+    }
+ ]
 }
