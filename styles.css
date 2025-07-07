@@ -1,3 +1,59 @@
+/* Auth Card Styling */
+.auth-card {
+    background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 40px 32px 32px 32px;
+    max-width: 400px;
+    width: 100%;
+    border: 2px solid var(--border-color);
+    margin: 0 auto;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.auth-card h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 18px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.form-group label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 69, 69, 0.08);
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 24px 8px 18px 8px;
+    }
+}
+
 /* Reset en basis styling */
 * {
     margin: 0;
@@ -364,8 +420,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .count-value {
@@ -374,6 +435,8 @@ body {
 }
 
 /* FAB */
+
+/* Floating Action Button (FAB) for main UI */
 .fab {
     position: fixed;
     bottom: var(--spacing-md);
@@ -403,6 +466,29 @@ body {
     height: 26px;
     color: white;
     font-size: 26px;
+}
+
+/* Auth button style (for login/signup forms) */
+.auth-btn {
+    width: 100%;
+    padding: 14px 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(255, 69, 69, 0.15);
+    margin-top: 16px;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    display: block;
+}
+
+.auth-btn:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    box-shadow: 0 6px 24px rgba(255, 69, 69, 0.22);
+    transform: translateY(-2px) scale(1.03);
 }
 
 /* Modal Overlay */
