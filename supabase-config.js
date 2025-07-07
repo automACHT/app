@@ -94,16 +94,25 @@ const RecipeService = {
   // Foto uploaden naar Supabase Storage
   async uploadPhoto(file, fileName) {
     try {
+      console.log('Starting photo upload to Supabase:', fileName);
+      
       const { data, error } = await supabase.storage
         .from('recipe-photos')
         .upload(fileName, file);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw error;
+      }
+      
+      console.log('Upload successful, getting public URL...');
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('recipe-photos')
         .getPublicUrl(fileName);
+      
+      console.log('Public URL generated:', publicUrl);
       
       return { success: true, url: publicUrl };
     } catch (error) {
@@ -112,3 +121,70 @@ const RecipeService = {
     }
   }
 };
+
+// Globale wrapper functies voor makkelijke toegang
+async function saveRecipe(recipeData) {
+  const result = await RecipeService.saveRecipe(recipeData);
+  if (result.success) {
+    return result.data;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+async function getAllRecipes() {
+  const result = await RecipeService.getAllRecipes();
+  if (result.success) {
+    return result.data;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+async function getRecipe(id) {
+  const result = await RecipeService.getRecipe(id);
+  if (result.success) {
+    return result.data;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+async function updateRecipe(id, updates) {
+  const result = await RecipeService.updateRecipe(id, updates);
+  if (result.success) {
+    return result.data;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+async function deleteRecipe(id) {
+  const result = await RecipeService.deleteRecipe(id);
+  if (result.success) {
+    return true;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+async function uploadPhoto(file, fileName) {
+  const result = await RecipeService.uploadPhoto(file, fileName);
+  if (result.success) {
+    return result.url;
+  } else {
+    throw new Error(result.error);
+  }
+}
+
+// Signal that Supabase is fully loaded and ready
+console.log('Supabase config loaded, dispatching ready event...');
+window.dispatchEvent(new CustomEvent('supabaseReady', { 
+  detail: { 
+    supabase, 
+    functions: { getAllRecipes, uploadPhoto } 
+  } 
+}));
+
+// Also set a global flag for polling functions
+window.supabaseReady = true;

@@ -204,12 +204,17 @@ async function saveRecipe() {
             const file = photoInput.files[0];
             const fileName = `recipe-${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
             
+            console.log('Uploading photo:', fileName, 'File size:', file.size);
+            
             const photoResult = await RecipeService.uploadPhoto(file, fileName);
             if (photoResult.success) {
                 photoUrl = photoResult.url;
+                console.log('Photo uploaded successfully:', photoUrl);
             } else {
                 console.warn('Photo upload failed:', photoResult.error);
             }
+        } else {
+            console.log('No photo selected for upload');
         }
         
         // Create recipe object
@@ -221,7 +226,7 @@ async function saveRecipe() {
             ingredients: ingredients,
             steps: steps,
             notes: formData.get('notes') || null,
-            photo_url: photoUrl
+            photo_url: photoUrl  // Gebruik photo_url zoals in de database
         };
         
         // Save to Supabase
@@ -229,8 +234,8 @@ async function saveRecipe() {
         
         if (result.success) {
             alert('Recept succesvol opgeslagen!');
-            // Navigate back
-            window.history.back();
+            // Navigate to recipes page
+            window.location.href = 'recipes.html';
         } else {
             throw new Error(result.error);
         }
