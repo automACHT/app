@@ -1,0 +1,54 @@
+{
+    "category": "Recipes",
+    "theme-color": "#FF5733",
+    "fields": [
+        {
+            "name": "recipeName",
+            "type": "text",
+            "label": "Recipe Name",
+            "required": true
+        },
+        {
+            "name": "recipeImage",
+            "type": "image",
+            "label": "Recipe Image",
+            "required": false
+        },
+        {
+            "name": "cookingTime",
+            "type": "number",
+            "label": "Cooking Time (minutes)",
+            "required": false
+        },
+        {
+            "name": "servings",
+            "type": "number",
+            "label": "Servings",
+            "required": false
+        },
+        { 
+            "name": "courseType",
+            "type": "select",
+            "label": "Course Type",
+            "required": true
+        },
+        {
+            "name": "ingredients",
+            "type": "select",
+            "label": "Ingredients",
+            "required": true
+        },
+        {
+            "name": "instructions",
+            "type": "textarea",
+            "label": "Instructions",
+            "required": true
+        },
+        {
+            "name": "notes",
+            "type": "textarea",
+            "label": "Notes",
+            "required": false
+        }
+    ]
+}

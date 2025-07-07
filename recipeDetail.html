@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recept - Autom8</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="recipeDetail.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <meta name="theme-color" content="#7EB5D4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Autom8">
+</head>
+
+<body>
+    <header class="header recipe-detail-header">
+        <div class="header-container">
+            <!-- Terug button -->
+            <button class="header-btn back-btn" onclick="window.history.back()" title="Terug">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+
+            <!-- Titel -->
+            <div class="page-title">
+                <h1 id="recipeTitle">Recept wordt geladen...</h1>
+            </div>
+
+            <!-- Actieknoppen -->
+            <div class="header-actions">
+                <button class="header-btn edit-btn" id="editBtn" title="Bewerken" style="display: none;">
+                    <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="header-btn delete-btn" id="deleteBtn" title="Verwijderen" style="display: none;">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+                <button class="header-btn share-btn" id="shareBtn" title="Delen" style="display: none;">
+                    <span class="material-symbols-outlined">share</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Loading state -->
+        <div class="loading-state" id="loadingState">
+            <div class="loading-spinner"></div>
+            <p>Recept wordt geladen...</p>
+        </div>
+
+        <!-- Error state -->
+        <div class="error-state" id="errorState" style="display: none;">
+            <div class="error-icon">
+                <span class="material-symbols-outlined">error</span>
+            </div>
+            <h2>Recept niet gevonden</h2>
+            <p>Het opgevraagde recept bestaat niet of is verwijderd.</p>
+            <button class="back-to-recipes-btn" onclick="window.location.href='recipes.html'">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Terug naar recepten
+            </button>
+        </div>
+
+        <!-- Recipe content -->
+        <div class="recipe-content" id="recipeContent" style="display: none;">
+            <!-- Hero sectie met foto -->
+            <div class="recipe-hero">
+                <div class="recipe-image-container">
+                    <img id="recipeImage" src="" alt="" class="recipe-image">
+                    <div class="recipe-image-placeholder" id="imagePlaceholder">
+                        <span class="material-symbols-outlined">restaurant</span>
+                        <p>Geen foto beschikbaar</p>
+                    </div>
+                </div>
+                <div class="recipe-overlay">
+                    <div class="recipe-basic-info">
+                        <h1 id="recipeNameDisplay"></h1>
+                        <div class="recipe-meta">
+                            <div class="meta-item">
+                                <span class="material-symbols-outlined">group</span>
+                                <span id="servingsDisplay"></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="material-symbols-outlined">schedule</span>
+                                <span id="cookingTimeDisplay"></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="material-symbols-outlined" id="courseTypeIcon">category</span>
+                                <span id="courseTypeDisplay"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingrediënten sectie -->
+            <div class="recipe-section">
+                <div class="section-header">
+                    <h2>
+                        <span class="material-symbols-outlined">list_alt</span>
+                        Ingrediënten
+                    </h2>
+                    <div class="servings-adjuster">
+                        <button class="serving-btn" id="decreaseServings">-</button>
+                        <span id="currentServings">1</span>
+                        <span>personen</span>
+                        <button class="serving-btn" id="increaseServings">+</button>
+                    </div>
+                </div>
+                <div class="ingredients-list" id="ingredientsList">
+                    <!-- Ingredients will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Bereidingswijze sectie -->
+            <div class="recipe-section">
+                <div class="section-header">
+                    <h2>
+                        <span class="material-symbols-outlined">format_list_numbered</span>
+                        Bereidingswijze
+                    </h2>
+                </div>
+                <div class="instructions-list" id="instructionsList">
+                    <!-- Instructions will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Notities sectie -->
+            <div class="recipe-section" id="notesSection" style="display: none;">
+                <div class="section-header">
+                    <h2>
+                        <span class="material-symbols-outlined">note</span>
+                        Notities
+                    </h2>
+                </div>
+                <div class="recipe-notes" id="recipeNotes">
+                    <!-- Notes will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Delete confirmation modal -->
+    <div class="modal-overlay" id="deleteModalOverlay" style="display: none;">
+        <div class="delete-modal">
+            <div class="modal-header">
+                <h2>Recept verwijderen</h2>
+                <p>Weet je zeker dat je dit recept wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</p>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" id="cancelDelete">Annuleren</button>
+                <button class="delete-confirm-btn" id="confirmDelete">
+                    <span class="material-symbols-outlined">delete</span>
+                    Verwijderen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="recipeDetail.js"></script>
+</body>
+
+</html>
