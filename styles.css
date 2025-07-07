@@ -109,6 +109,7 @@ body {
     height: 20px;
     color: var(--text-secondary);
     pointer-events: none;
+    font-size: 20px;
 }
 
 .search-input {
@@ -156,10 +157,12 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.header-btn svg {
-    width: 20px;
-    height: 20px;
+.header-btn svg,
+.header-btn .material-symbols-outlined {
+    width: 24px;
+    height: 24px;
     color: var(--text-secondary);
+    font-size: 24px;
 }
 
 .profile-btn {
@@ -167,7 +170,8 @@ body {
     border-color: var(--primary-color);
 }
 
-.profile-btn svg {
+.profile-btn svg,
+.profile-btn .material-symbols-outlined {
     color: white;
 }
 
@@ -303,10 +307,12 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.category-icon svg {
+.category-icon svg,
+.category-icon .material-symbols-outlined {
     width: 24px;
     height: 24px;
     color: white;
+    font-size: 24px;
 }
 
 .category-card h3 {
@@ -357,10 +363,12 @@ body {
     box-shadow: 0 8px 28px rgba(255, 69, 69, 0.4);
 }
 
-.fab svg {
+.fab svg,
+.fab .material-symbols-outlined {
     width: 26px;
     height: 26px;
     color: white;
+    font-size: 26px;
 }
 
 /* Responsive */
