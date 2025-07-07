@@ -1,54 +1,94 @@
 {
     "category": "Recipes",
-    "theme-color": "#FF5733",
+    "theme-color": "#5391AE",
+    "table": "recipes",
+    "storage-bucket": "recipe-photos",
     "fields": [
         {
-            "name": "recipeName",
+            "name": "name",
             "type": "text",
-            "label": "Recipe Name",
-            "required": true
+            "label": "Naam van het recept",
+            "required": true,
+            "placeholder": "Bijvoorbeeld: Spaghetti Carbonara"
         },
         {
-            "name": "recipeImage",
+            "name": "photo_url",
             "type": "image",
-            "label": "Recipe Image",
+            "label": "Recept afbeelding",
             "required": false
         },
         {
-            "name": "cookingTime",
+            "name": "cooking_time",
             "type": "number",
-            "label": "Cooking Time (minutes)",
-            "required": false
+            "label": "Bereidingstijd (minuten)",
+            "required": false,
+            "min": 1,
+            "placeholder": "30"
         },
         {
             "name": "servings",
             "type": "number",
-            "label": "Servings",
-            "required": false
+            "label": "Aantal personen",
+            "required": true,
+            "min": 1,
+            "max": 20,
+            "value": 4
         },
         { 
-            "name": "courseType",
+            "name": "course_type",
             "type": "select",
-            "label": "Course Type",
-            "required": true
+            "label": "Soort gerecht",
+            "required": false,
+            "options": [
+                {
+                    "value": "voorgerecht",
+                    "label": "Voorgerecht"
+                },
+                {
+                    "value": "hoofdgerecht",
+                    "label": "Hoofdgerecht"
+                },
+                {
+                    "value": "bijgerecht",
+                    "label": "Bijgerecht"
+                },
+                {
+                    "value": "nagerecht",
+                    "label": "Nagerecht"
+                },
+                {
+                    "value": "snack",
+                    "label": "Snack"
+                },
+                {
+                    "value": "drank",
+                    "label": "Drank"
+                }
+            ]
         },
         {
             "name": "ingredients",
-            "type": "select",
-            "label": "Ingredients",
-            "required": true
+            "type": "textarea",
+            "label": "Ingrediënten",
+            "required": true,
+            "placeholder": "Voer de ingrediënten in, elk op een nieuwe regel",
+            "rows": 6
         },
         {
-            "name": "instructions",
+            "name": "steps",
             "type": "textarea",
-            "label": "Instructions",
-            "required": true
+            "label": "Bereidingswijze",
+            "required": true,
+            "placeholder": "Beschrijf de bereidingswijze stap voor stap",
+            "rows": 8
         },
         {
             "name": "notes",
             "type": "textarea",
-            "label": "Notes",
-            "required": false
+            "label": "Extra notities",
+            "required": false,
+            "placeholder": "Bijvoorbeeld: Tips, variaties, of bijzondere informatie...",
+            "rows": 4
         }
     ]
 }

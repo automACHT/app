@@ -1,0 +1,57 @@
+{
+    "category": "Grocery List",
+    "theme-color": "#E2D269",
+    "table": "grocery_list",
+    "storage-bucket": "grocery-list-photos",
+    "multiple": true,
+    "fields": [
+        {
+            "name": "name",
+            "type": "text",
+            "label": "Naam van het item",
+            "required": true,
+            "placeholder": "Bijvoorbeeld: Kaas"
+        },
+        {
+            "name": "photo_url",
+            "type": "image",
+            "label": "Item afbeelding",
+            "required": false
+        },
+        {
+            "name": "quantity",
+            "type": "number",
+            "label": "Hoeveelheid",
+            "required": true,
+            "min": 1,
+            "placeholder": "Bijvoorbeeld: 2"
+        },
+        {
+            "name": "unit",
+            "type": "select",
+            "label": "Eenheid",
+            "required": false,
+            "options": [
+                { "value": "kg", "label": "Kilogram" },
+                { "value": "g", "label": "Grammen" },
+                { "value": "l", "label": "Liter" },
+                { "value": "ml", "label": "Milliliter" },
+                { "value": "stuk", "label": "Stuk" }
+            ]
+        },
+        {
+            "name": "category",
+            "type": "select",
+            "label": "Categorie",
+            "required": false,
+            "options": [
+                { "value": "zuivel", "label": "Zuivel" },
+                { "value": "vlees", "label": "Vlees" },
+                { "value": "groenten", "label": "Groenten" },
+                { "value": "fruit", "label": "Fruit" },
+                { "value": "granen", "label": "Granen" },
+                { "value": "overig", "label": "Overig" }
+            ]
+        }
+    ]
+}
