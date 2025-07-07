@@ -473,9 +473,8 @@ class RecipesPage {
     }
 
     openRecipeDetail(recipeId) {
-        // Voor nu simpelweg terug naar home, later kunnen we een detail pagina maken
-        console.log('Open recept detail:', recipeId);
-        // window.location.href = `recipeDetail.html?id=${recipeId}`;
+        console.log('Opening recipe detail for ID:', recipeId);
+        window.location.href = `recipeDetail.html?id=${recipeId}`;
     }
 }
 

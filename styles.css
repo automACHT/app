@@ -369,8 +369,8 @@ body {
 }
 
 .count-value {
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 /* FAB */

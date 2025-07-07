@@ -15,6 +15,168 @@ const saveBtn = document.getElementById('saveRecipe');
 const saveFab = document.getElementById('saveFab');
 const recipeForm = document.getElementById('recipeForm');
 
+// Edit mode variables
+let isEditMode = false;
+let editRecipeId = null;
+let currentRecipe = null;
+
+// Check if we're in edit mode
+function checkEditMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    editRecipeId = urlParams.get('edit');
+    
+    if (editRecipeId) {
+        isEditMode = true;
+        console.log('Edit mode activated for recipe ID:', editRecipeId);
+        // Update page title
+        document.title = 'Recept bewerken - Autom8';
+        // Update header title if present
+        const headerTitle = document.querySelector('.page-title h1');
+        if (headerTitle) {
+            headerTitle.textContent = 'Recept bewerken';
+        }
+        // Update save button text
+        if (saveBtn) saveBtn.textContent = 'Wijzigingen opslaan';
+        // Load recipe for editing
+        loadRecipeForEdit();
+    }
+}
+
+// Load recipe data for editing
+async function loadRecipeForEdit() {
+    try {
+        // Wait for Supabase to be ready
+        await waitForSupabase();
+        
+        const recipe = await getRecipeById(editRecipeId);
+        if (!recipe) {
+            alert('Recept niet gevonden');
+            window.location.href = 'recipes.html';
+            return;
+        }
+        
+        currentRecipe = recipe;
+        populateForm(recipe);
+        
+    } catch (error) {
+        console.error('Error loading recipe for edit:', error);
+        alert('Fout bij het laden van het recept');
+        window.location.href = 'recipes.html';
+    }
+}
+
+// Wait for Supabase to be available
+async function waitForSupabase() {
+    let attempts = 0;
+    while (attempts < 50) {
+        if (typeof getRecipeById === 'function' && window.supabase) {
+            return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    throw new Error('Supabase not available');
+}
+
+// Get recipe by ID
+async function getRecipeById(id) {
+    try {
+        const { data, error } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+        if (error) {
+            console.error('Supabase error:', error);
+            return null;
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Error fetching recipe:', error);
+        return null;
+    }
+}
+
+// Populate form with recipe data
+function populateForm(recipe) {
+    // Basic fields
+    document.getElementById('recipeName').value = recipe.name || '';
+    document.getElementById('servings').value = recipe.servings || 1;
+    document.getElementById('courseType').value = recipe.course_type || '';
+    document.getElementById('cookingTime').value = recipe.cooking_time || '';
+    document.getElementById('notes').value = recipe.notes || '';
+    
+    // Photo
+    if (recipe.photo_url) {
+        photoPreview.src = recipe.photo_url;
+        photoPreviewContainer.style.display = 'block';
+        photoUpload.querySelector('.photo-placeholder').style.display = 'none';
+    }
+    
+    // Parse and handle ingredients
+    let ingredients = recipe.ingredients;
+    if (typeof ingredients === 'string') {
+        try {
+            ingredients = JSON.parse(ingredients);
+            console.log('Parsed ingredients from JSON string for editing:', ingredients);
+        } catch (e) {
+            console.error('Failed to parse ingredients JSON for editing:', e, ingredients);
+            ingredients = [];
+        }
+    }
+    
+    if (ingredients && Array.isArray(ingredients)) {
+        // Clear existing ingredients
+        ingredientsContainer.innerHTML = '';
+        
+        ingredients.forEach(ingredient => {
+            // Handle both string format and object format
+            if (typeof ingredient === 'string') {
+                // Split string format "amount name" into components
+                const parts = ingredient.split(' ');
+                const amount = parts[0] || '';
+                const name = parts.slice(1).join(' ') || '';
+                addIngredientField({ amount, name });
+            } else {
+                // Object format { amount, name }
+                addIngredientField(ingredient);
+            }
+        });
+    }
+    
+    // Parse and handle instructions (check both steps and instructions columns)
+    let instructions = recipe.instructions || recipe.steps;
+    if (typeof instructions === 'string') {
+        try {
+            instructions = JSON.parse(instructions);
+            console.log('Parsed instructions from JSON string for editing:', instructions);
+        } catch (e) {
+            console.error('Failed to parse instructions JSON for editing:', e, instructions);
+            instructions = [];
+        }
+    }
+    
+    if (instructions && Array.isArray(instructions)) {
+        // Clear existing steps
+        stepsContainer.innerHTML = '';
+        
+        instructions.forEach(instruction => {
+            // Handle both string format and object format
+            if (typeof instruction === 'string') {
+                addStepField({ description: instruction });
+            } else if (instruction.description) {
+                // Object format { description } or { number, description }
+                addStepField({ description: instruction.description });
+            } else {
+                // Fallback: convert object to string
+                addStepField({ description: JSON.stringify(instruction) });
+            }
+        });
+    }
+}
+
 // Photo upload functionality
 photoUpload.addEventListener('click', () => {
     photoInput.click();
@@ -62,12 +224,12 @@ increaseBtn.addEventListener('click', () => {
 });
 
 // Add ingredient functionality
-addIngredientBtn.addEventListener('click', () => {
+function addIngredientField(ingredientData = null) {
     const ingredientItem = document.createElement('div');
     ingredientItem.className = 'ingredient-item';
     ingredientItem.innerHTML = `
-        <input type="text" placeholder="Hoeveelheid" class="ingredient-amount">
-        <input type="text" placeholder="Ingredient" class="ingredient-name">
+        <input type="text" placeholder="Hoeveelheid" class="ingredient-amount" value="${ingredientData?.amount || ''}">
+        <input type="text" placeholder="Ingredient" class="ingredient-name" value="${ingredientData?.name || ''}">
         <button type="button" class="remove-ingredient" title="Verwijderen">
             <span class="material-symbols-outlined">close</span>
         </button>
@@ -81,38 +243,60 @@ addIngredientBtn.addEventListener('click', () => {
     
     ingredientsContainer.appendChild(ingredientItem);
     
-    // Focus on the first input
-    ingredientItem.querySelector('.ingredient-amount').focus();
+    // Focus on the first input if no data provided (new ingredient)
+    if (!ingredientData) {
+        ingredientItem.querySelector('.ingredient-amount').focus();
+    }
+}
+
+addIngredientBtn.addEventListener('click', () => {
+    addIngredientField();
 });
 
 // Add step functionality
-addStepBtn.addEventListener('click', () => {
+function addStepField(stepData = null) {
     const stepNumber = stepsContainer.children.length + 1;
     const stepItem = document.createElement('div');
     stepItem.className = 'step-item';
     stepItem.innerHTML = `
         <div class="step-number">${stepNumber}</div>
-        <textarea placeholder="Beschrijf stap ${stepNumber}..." class="step-description" rows="1"></textarea>
+        <textarea placeholder="Beschrijf stap ${stepNumber}..." class="step-description" rows="1">${stepData?.description || ''}</textarea>
         <button type="button" class="remove-step" title="Verwijderen">
             <span class="material-symbols-outlined">close</span>
         </button>
     `;
     
-    // Add remove functionality
+    // Add remove functionality and auto-resize
     const removeBtn = stepItem.querySelector('.remove-step');
+    const textarea = stepItem.querySelector('.step-description');
+    
     removeBtn.addEventListener('click', () => {
         stepItem.remove();
         updateStepNumbers();
     });
     
+    // Auto-resize textarea
+    textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    });
+    
     stepsContainer.appendChild(stepItem);
     
-    // Set initial height for the new textarea
-    const newTextarea = stepItem.querySelector('.step-description');
-    newTextarea.style.height = '44px';
+    // Focus on textarea if no data provided (new step)
+    if (!stepData) {
+        textarea.focus();
+    }
     
-    // Focus on the textarea
-    newTextarea.focus();
+    // Auto-resize immediately if content is provided
+    if (stepData?.description) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+}
+
+addStepBtn.addEventListener('click', () => {
+    addStepField();
 });
 
 // Update step numbers after removal
@@ -199,8 +383,9 @@ async function saveRecipe() {
     try {
         let photoUrl = null;
         
-        // Upload photo if one is selected
+        // Handle photo upload
         if (photoInput.files[0]) {
+            // New photo uploaded
             const file = photoInput.files[0];
             const fileName = `recipe-${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
             
@@ -213,6 +398,10 @@ async function saveRecipe() {
             } else {
                 console.warn('Photo upload failed:', photoResult.error);
             }
+        } else if (isEditMode && currentRecipe && currentRecipe.photo_url && photoPreview.src) {
+            // Keep existing photo if preview is showing and no new photo was uploaded
+            photoUrl = currentRecipe.photo_url;
+            console.log('Keeping existing photo:', photoUrl);
         } else {
             console.log('No photo selected for upload');
         }
@@ -224,13 +413,23 @@ async function saveRecipe() {
             course_type: formData.get('courseType') || null,
             cooking_time: formData.get('cookingTime') ? parseInt(formData.get('cookingTime')) : null,
             ingredients: ingredients,
-            steps: steps,
+            steps: steps, // Save as 'steps' to match existing database schema
             notes: formData.get('notes') || null,
             photo_url: photoUrl  // Gebruik photo_url zoals in de database
         };
         
-        // Save to Supabase
-        const result = await RecipeService.saveRecipe(recipe);
+        console.log('Saving recipe with data:', recipe);
+        console.log('Ingredients type:', typeof recipe.ingredients, 'Array?', Array.isArray(recipe.ingredients));
+        console.log('Steps type:', typeof recipe.steps, 'Array?', Array.isArray(recipe.steps));
+        
+        let result;
+        if (isEditMode && currentRecipe) {
+            // Update recipe
+            result = await RecipeService.updateRecipe(currentRecipe.id, recipe);
+        } else {
+            // Save new recipe
+            result = await RecipeService.saveRecipe(recipe);
+        }
         
         if (result.success) {
             alert('Recept succesvol opgeslagen!');
@@ -313,3 +512,6 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// Check edit mode on page load
+document.addEventListener('DOMContentLoaded', checkEditMode);
