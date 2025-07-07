@@ -108,6 +108,71 @@
     <button class="fab" id="addButton" title="Nieuwe notitie toevoegen">
         <span class="material-symbols-outlined">add</span>
     </button>
+
+    <!-- Category Selection Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="category-modal" id="categoryModal">
+            <div class="modal-header">
+                <button class="modal-close-btn" id="modalCloseBtn" title="Sluiten">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <h2>Wat wil je toevoegen?</h2>
+                <p>Kies een categorie voor je nieuwe notitie</p>
+            </div>
+            
+            <div class="modal-categories-grid">
+                <div class="modal-category-card" data-category="recepten">
+                    <div class="modal-category-icon recepten-color">
+                        <span class="material-symbols-outlined">restaurant</span>
+                    </div>
+                    <h3>Recept</h3>
+                    <p>Nieuw gerecht toevoegen</p>
+                </div>
+
+                <div class="modal-category-card" data-category="kleding">
+                    <div class="modal-category-icon kleding-color">
+                        <span class="material-symbols-outlined">checkroom</span>
+                    </div>
+                    <h3>Kledingstuk</h3>
+                    <p>Maat of stijl noteren</p>
+                </div>
+
+                <div class="modal-category-card" data-category="boodschappen">
+                    <div class="modal-category-icon boodschappen-color">
+                        <span class="material-symbols-outlined">shopping_cart</span>
+                    </div>
+                    <h3>Boodschappenlijst</h3>
+                    <p>Nieuwe winkellijst maken</p>
+                </div>
+
+                <div class="modal-category-card" data-category="notities">
+                    <div class="modal-category-icon notities-color">
+                        <span class="material-symbols-outlined">description</span>
+                    </div>
+                    <h3>Notitie</h3>
+                    <p>Algemene notitie maken</p>
+                </div>
+
+                <div class="modal-category-card" data-category="ideeen">
+                    <div class="modal-category-icon ideeen-color">
+                        <span class="material-symbols-outlined">lightbulb</span>
+                    </div>
+                    <h3>Idee</h3>
+                    <p>Inspiratie vastleggen</p>
+                </div>
+
+                <div class="modal-category-card" data-category="taken">
+                    <div class="modal-category-icon taken-color">
+                        <span class="material-symbols-outlined">task_alt</span>
+                    </div>
+                    <h3>Taak</h3>
+                    <p>To-do item toevoegen</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 
 </html>

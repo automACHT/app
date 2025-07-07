@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nieuw Recept - Autom8</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="createRecipe.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <meta name="theme-color" content="#7EB5D4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Autom8">
+</head>
+
+<body>
+    <header class="header recipe-header">
+        <div class="header-container">
+            <!-- Terug button -->
+            <button class="header-btn back-btn" onclick="window.history.back()" title="Terug">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+
+            <!-- Titel -->
+            <div class="page-title">
+                <div class="page-icon">
+                    <span class="material-symbols-outlined">restaurant</span>
+                </div>
+                <h1>Nieuw Recept</h1>
+            </div>
+
+            <!-- Acties -->
+            <div class="header-actions">
+                <button class="header-btn save-btn" id="saveRecipe" title="Opslaan">
+                    <span class="material-symbols-outlined">save</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <form class="recipe-form" id="recipeForm">
+            <!-- Foto sectie -->
+            <div class="form-section photo-section">
+                <h2>Foto</h2>
+                <div class="photo-upload-area" id="photoUpload">
+                    <div class="photo-placeholder">
+                        <span class="material-symbols-outlined">add_a_photo</span>
+                        <p>Voeg een foto toe</p>
+                        <small>Klik om een afbeelding te selecteren</small>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" hidden>
+                    <div class="photo-preview-container" style="display: none;">
+                        <img id="photoPreview" class="photo-preview">
+                        <button type="button" class="remove-photo-btn" id="removePhoto" title="Foto verwijderen">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basis informatie -->
+            <div class="form-section">
+                <h2>Basis Informatie</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="recipeName">Naam van het recept *</label>
+                        <input type="text" id="recipeName" name="recipeName" required placeholder="Bijvoorbeeld: Spaghetti Carbonara">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="servings">Aantal personen *</label>
+                        <div class="number-input">
+                            <button type="button" class="number-btn" id="decreaseServings">-</button>
+                            <input type="number" id="servings" name="servings" value="4" min="1" max="20" required>
+                            <button type="button" class="number-btn" id="increaseServings">+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="courseType">Soort gerecht</label>
+                        <select id="courseType" name="courseType">
+                            <option value="">Selecteer een type</option>
+                            <option value="voorgerecht">Voorgerecht</option>
+                            <option value="hoofdgerecht">Hoofdgerecht</option>
+                            <option value="bijgerecht">Bijgerecht</option>
+                            <option value="nagerecht">Nagerecht</option>
+                            <option value="snack">Snack</option>
+                            <option value="drank">Drank</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cookingTime">Bereidingstijd (minuten)</label>
+                        <input type="number" id="cookingTime" name="cookingTime" min="1" placeholder="30">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingrediënten -->
+            <div class="form-section">
+                <h2>Ingrediënten</h2>
+                <div class="ingredients-container" id="ingredientsContainer">
+                    <div class="ingredient-item">
+                        <input type="text" placeholder="Hoeveelheid" class="ingredient-amount">
+                        <input type="text" placeholder="Ingredient" class="ingredient-name">
+                        <button type="button" class="remove-ingredient" title="Verwijderen">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="add-ingredient-btn" id="addIngredient">
+                    <span class="material-symbols-outlined">add</span>
+                    Ingredient toevoegen
+                </button>
+            </div>
+
+            <!-- Bereidingswijze -->
+            <div class="form-section">
+                <h2>Bereidingswijze</h2>
+                <div class="steps-container" id="stepsContainer">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <textarea placeholder="Beschrijf de eerste stap..." class="step-description" rows="1"></textarea>
+                        <button type="button" class="remove-step" title="Verwijderen">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="add-step-btn" id="addStep">
+                    <span class="material-symbols-outlined">add</span>
+                    Stap toevoegen
+                </button>
+            </div>
+
+            <!-- Notities -->
+            <div class="form-section">
+                <h2>Extra Notities</h2>
+                <textarea id="notes" name="notes" placeholder="Bijvoorbeeld: Tips, variaties, of bijzondere informatie..." rows="4"></textarea>
+            </div>
+        </form>
+    </main>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-group">
+        <button class="fab fab-secondary" onclick="window.history.back()" title="Annuleren">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <button class="fab fab-primary" id="saveFab" title="Recept opslaan">
+            <span class="material-symbols-outlined">save</span>
+        </button>
+    </div>
+
+    <script src="createRecipe.js"></script>
+</body>
+
+</html>

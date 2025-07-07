@@ -371,6 +371,216 @@ body {
     font-size: 26px;
 }
 
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Category Modal */
+.category-modal {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.modal-overlay.show .category-modal {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e9e9e9 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.modal-close-btn:hover {
+    background: linear-gradient(135deg, #e9e9e9 0%, #ddd 100%);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-close-btn .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.modal-header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Modal Categories Grid */
+.modal-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+/* Modal Category Cards */
+.modal-category-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 12px;
+    padding: var(--spacing-sm);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: transparent;
+}
+
+.modal-category-card:hover::before {
+    opacity: 1;
+}
+
+/* Modal Category Icons */
+.modal-category-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-sm);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-category-icon .material-symbols-outlined {
+    font-size: 20px;
+    color: white;
+}
+
+/* Category Color Classes */
+.recepten-color {
+    background: linear-gradient(135deg, var(--recepten-light), var(--recepten-dark));
+}
+
+.modal-category-card[data-category="recepten"]::before {
+    background: linear-gradient(90deg, var(--recepten-light), var(--recepten-dark));
+}
+
+.kleding-color {
+    background: linear-gradient(135deg, var(--kleding-light), var(--kleding-dark));
+}
+
+.modal-category-card[data-category="kleding"]::before {
+    background: linear-gradient(90deg, var(--kleding-light), var(--kleding-dark));
+}
+
+.boodschappen-color {
+    background: linear-gradient(135deg, var(--boodschappen-light), var(--boodschappen-dark));
+}
+
+.modal-category-card[data-category="boodschappen"]::before {
+    background: linear-gradient(90deg, var(--boodschappen-light), var(--boodschappen-dark));
+}
+
+.notities-color {
+    background: linear-gradient(135deg, var(--notities-light), var(--notities-dark));
+}
+
+.modal-category-card[data-category="notities"]::before {
+    background: linear-gradient(90deg, var(--notities-light), var(--notities-dark));
+}
+
+.ideeen-color {
+    background: linear-gradient(135deg, var(--ideeen-light), var(--ideeen-dark));
+}
+
+.modal-category-card[data-category="ideeen"]::before {
+    background: linear-gradient(90deg, var(--ideeen-light), var(--ideeen-dark));
+}
+
+.taken-color {
+    background: linear-gradient(135deg, var(--taken-light), var(--taken-dark));
+}
+
+.modal-category-card[data-category="taken"]::before {
+    background: linear-gradient(90deg, var(--taken-light), var(--taken-dark));
+}
+
+/* Modal Category Text */
+.modal-category-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.modal-category-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .main-content {
