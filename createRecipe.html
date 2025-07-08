@@ -21,7 +21,7 @@
     <header class="header recipe-header">
         <div class="header-container">
             <!-- Terug button -->
-            <button class="header-btn back-btn" title="Terug">
+            <button class="header-btn back-btn" onclick="handleBackNavigation(event); return false;" title="Terug">
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
 
@@ -56,7 +56,7 @@
 
     <!-- Floating Action Buttons -->
     <div class="fab-group">
-        <button class="fab fab-secondary" onclick="window.history.back()" title="Annuleren">
+        <button class="fab fab-secondary" onclick="handleBackNavigation(event); return false;" title="Annuleren">
             <span class="material-symbols-outlined">close</span>
         </button>
         <button class="fab fab-primary" id="saveFab" title="Item opslaan">
@@ -72,6 +72,32 @@
     <!-- Module Script -->
     <script>
         let controller;
+
+        // Handle back navigation specifiek voor grocery lists
+        function handleBackNavigation(event) {
+            console.log('createRecipe handleBackNavigation called');
+            console.log('Current URL:', window.location.href);
+            
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            console.log('Category:', category);
+            
+            if (category === 'grocerylist') {
+                console.log('Navigating from createRecipe to grocery list');
+                window.location.replace('recipes.html?category=grocerylist&view=list');
+            } else {
+                console.log('Navigating from createRecipe to recipes');
+                window.location.replace('recipes.html');
+            }
+            
+            return false;
+        }
 
         // Bepaal welke configuratie te gebruiken op basis van URL parameter
         function getConfigPath() {
@@ -213,7 +239,7 @@
                         <p>${errorMessage}</p>
                         <p><small>Details: ${error.message}</small></p>
                         <button onclick="location.reload()">Opnieuw proberen</button>
-                        <button onclick="window.history.back()">Terug</button>
+                        <button onclick="handleBackNavigation()">Terug</button>
                     </div>
                 `;
             }

@@ -47,7 +47,7 @@ categoryCards.forEach(card => {
                 console.log('Kleding page not yet implemented');
                 break;
             case 'boodschappen':
-                window.location.href = 'createRecipe.html?category=grocerylist';
+                window.location.href = 'createRecipe.html?category=grocerylist&view=create';
                 break;
             case 'notities':
                 // TODO: Create notities page
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Kleding overview page not yet implemented');
                     break;
                 case 'boodschappen':
-                    window.location.href = 'recipes.html?category=grocerylist';
+                    window.location.href = 'recipes.html?category=grocerylist&view=list';
                     break;
                 case 'notities':
                     // TODO: Create notities overview page

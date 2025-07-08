@@ -21,7 +21,7 @@
     <header class="header recipes-header">
         <div class="header-container">
             <!-- Terug button -->
-            <button class="header-btn back-btn" onclick="window.history.back()" title="Terug">
+            <button class="header-btn back-btn" onclick="handleBackNavigation(event); return false;" title="Terug">
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
 
@@ -80,6 +80,33 @@
     <script>
         let controller;
 
+        // Handle back navigation specifiek voor grocery lists
+        function handleBackNavigation() {
+            console.log('handleBackNavigation called');
+            console.log('Current URL:', window.location.href);
+            console.log('URL params:', window.location.search);
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            console.log('Category:', category);
+            
+            // Stop alle mogelijke framework interventies
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Forceer navigatie naar main ongeacht de parameters
+            if (window.location.search.includes('grocerylist')) {
+                console.log('Forcing navigation to main.html');
+                window.location.replace('main.html');
+            } else {
+                console.log('Regular navigation to main.html');
+                window.location.replace('main.html');
+            }
+            
+            return false;
+        }
+
         // Bepaal welke configuratie te gebruiken op basis van URL parameter
         function getConfigPath() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -120,7 +147,7 @@
             }
         }
 
-        // Initialize module controller
+        // Initialize module
         async function initModule() {
             try {
                 const configPath = getConfigPath();
@@ -142,8 +169,8 @@
                 
                 controller.framework.on('view', (item) => {
                     if (category === 'grocerylist') {
-                        // Voor grocery lists - eventueel een detail pagina maken later
-                        window.location.href = `createRecipe.html?category=grocerylist&edit=${item.id}`;
+                        // Voor grocery lists - ga naar edit met view parameter
+                        window.location.href = `createRecipe.html?category=grocerylist&view=create&edit=${item.id}`;
                     } else {
                         // Voor recipes
                         window.location.href = `recipeDetail.html?id=${item.id}`;
@@ -152,7 +179,7 @@
 
                 controller.framework.on('edit', (item) => {
                     if (category === 'grocerylist') {
-                        window.location.href = `createRecipe.html?category=grocerylist&edit=${item.id}`;
+                        window.location.href = `createRecipe.html?category=grocerylist&view=create&edit=${item.id}`;
                     } else {
                         window.location.href = `createRecipe.html?edit=${item.id}`;
                     }
@@ -176,13 +203,40 @@
 
         // Setup additional event handlers
         function setupEventHandlers() {
+            // FORCE override van back button met priority event listener
+            const backBtn = document.querySelector('.back-btn');
+            if (backBtn) {
+                // Verwijder alle bestaande event listeners door de button te vervangen
+                const newBackBtn = backBtn.cloneNode(true);
+                backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+                
+                // Voeg nieuwe event listener toe met capture=true voor priority
+                newBackBtn.addEventListener('click', function(e) {
+                    console.log('Event listener back button clicked');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('category') === 'grocerylist') {
+                        console.log('Event listener: Navigating to main from grocery list');
+                        window.location.replace('main.html');
+                    } else {
+                        console.log('Event listener: Navigating to main from recipes');
+                        window.location.replace('main.html');
+                    }
+                    
+                    return false;
+                }, true); // capture=true gives this priority
+            }
+
             // Bepaal de create URL op basis van categorie
             const urlParams = new URLSearchParams(window.location.search);
             const category = urlParams.get('category');
             
             let createUrl = 'createRecipe.html'; // default
             if (category === 'grocerylist') {
-                createUrl = 'createRecipe.html?category=grocerylist';
+                createUrl = 'createRecipe.html?category=grocerylist&view=create';
             }
 
             // Create button
@@ -246,7 +300,7 @@
             const category = urlParams.get('category');
             
             if (category === 'grocerylist') {
-                window.location.href = `createRecipe.html?category=grocerylist&edit=${id}`;
+                window.location.href = `createRecipe.html?category=grocerylist&view=create&edit=${id}`;
             } else {
                 window.location.href = `createRecipe.html?edit=${id}`;
             }

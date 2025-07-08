@@ -505,10 +505,18 @@ class ModulePageController {
     updateURL(params) {
         const url = new URL(window.location);
         
+        // Bewaar belangrijke parameters die we willen behouden
+        const category = url.searchParams.get('category');
+        
         // Clear existing params
         url.searchParams.delete('view');
         url.searchParams.delete('id');
         url.searchParams.delete('edit');
+
+        // Herstel category parameter als die bestond
+        if (category) {
+            url.searchParams.set('category', category);
+        }
 
         // Add new params
         Object.entries(params).forEach(([key, value]) => {
