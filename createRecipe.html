@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recept - Autom8</title>
+    <title>Nieuw Item - Autom8</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="framework/framework.css">
     <link rel="stylesheet" href="createRecipe.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <meta name="theme-color" content="#FF5733">
+    <meta name="theme-color" content="#FF5733" id="themeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Autom8">
@@ -28,9 +28,9 @@
             <!-- Titel -->
             <div class="page-title">
                 <div class="page-icon">
-                    <span class="material-symbols-outlined">restaurant</span>
+                    <span class="material-symbols-outlined" id="pageIcon">add</span>
                 </div>
-                <h1>Nieuw Recept</h1>
+                <h1 id="pageTitle">Nieuw Item</h1>
             </div>
 
             <!-- Acties -->
@@ -59,7 +59,7 @@
         <button class="fab fab-secondary" onclick="window.history.back()" title="Annuleren">
             <span class="material-symbols-outlined">close</span>
         </button>
-        <button class="fab fab-primary" id="saveFab" title="Recept opslaan">
+        <button class="fab fab-primary" id="saveFab" title="Item opslaan">
             <span class="material-symbols-outlined">save</span>
         </button>
     </div>
@@ -69,115 +69,105 @@
     <script src="framework/ModuleViewGenerator.js"></script>
     <script src="framework/ModulePageController.js"></script>
 
-    <!-- Recipe Module Script -->
+    <!-- Module Script -->
     <script>
-        // Inline configuratie als fallback voor CORS issues
-        window.recipeConfig = {
-            "category": "Recipes",
-            "theme-color": "#FF5733",
-            "table": "recipes",
-            "storage-bucket": "recipe-photos",
-            "fields": [
-                {
-                    "name": "name",
-                    "type": "text",
-                    "label": "Naam van het recept",
-                    "required": true,
-                    "placeholder": "Bijvoorbeeld: Spaghetti Carbonara"
-                },
-                {
-                    "name": "photo_url",
-                    "type": "image",
-                    "label": "Recept afbeelding",
-                    "required": false
-                },
-                {
-                    "name": "cooking_time",
-                    "type": "number",
-                    "label": "Bereidingstijd (minuten)",
-                    "required": false,
-                    "min": 1,
-                    "placeholder": "30"
-                },
-                {
-                    "name": "servings",
-                    "type": "number",
-                    "label": "Aantal personen",
-                    "required": true,
-                    "min": 1,
-                    "max": 20,
-                    "value": 4
-                },
-                { 
-                    "name": "course_type",
-                    "type": "select",
-                    "label": "Soort gerecht",
-                    "required": false,
-                    "options": [
-                        {
-                            "value": "voorgerecht",
-                            "label": "Voorgerecht"
-                        },
-                        {
-                            "value": "hoofdgerecht",
-                            "label": "Hoofdgerecht"
-                        },
-                        {
-                            "value": "bijgerecht",
-                            "label": "Bijgerecht"
-                        },
-                        {
-                            "value": "nagerecht",
-                            "label": "Nagerecht"
-                        },
-                        {
-                            "value": "snack",
-                            "label": "Snack"
-                        },
-                        {
-                            "value": "drank",
-                            "label": "Drank"
-                        }
-                    ]
-                },
-                {
-                    "name": "ingredients",
-                    "type": "textarea",
-                    "label": "Ingrediënten",
-                    "required": true,
-                    "placeholder": "Voer de ingrediënten in, elk op een nieuwe regel",
-                    "rows": 6
-                },
-                {
-                    "name": "steps",
-                    "type": "textarea",
-                    "label": "Bereidingswijze",
-                    "required": true,
-                    "placeholder": "Beschrijf de bereidingswijze stap voor stap",
-                    "rows": 8
-                },
-                {
-                    "name": "notes",
-                    "type": "textarea",
-                    "label": "Extra notities",
-                    "required": false,
-                    "placeholder": "Bijvoorbeeld: Tips, variaties, of bijzondere informatie...",
-                    "rows": 4
-                }
-            ]
-        };
-
         let controller;
 
-        // Initialize recipe controller
-        async function initRecipeModule() {
+        // Bepaal welke configuratie te gebruiken op basis van URL parameter
+        function getConfigPath() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            switch(category) {
+                case 'grocerylist':
+                    return './config/conf.grocerylist.json';
+                case 'recipe':
+                default:
+                    return './config/conf.recipe.json';
+            }
+        }
+
+        // Update page styling en titel op basis van categorie
+        function updatePageForCategory(config) {
+            // Update theme color
+            const themeColorMeta = document.getElementById('themeColor');
+            if (themeColorMeta && config['theme-color']) {
+                themeColorMeta.setAttribute('content', config['theme-color']);
+            }
+
+            // Update page title en icon
+            const pageTitle = document.getElementById('pageTitle');
+            const pageIcon = document.getElementById('pageIcon');
+            
+            if (config.category === 'Grocery List') {
+                document.title = 'Nieuwe Boodschappenlijst - Autom8';
+                if (pageTitle) pageTitle.textContent = 'Nieuwe Boodschappenlijst';
+                if (pageIcon) pageIcon.textContent = 'shopping_cart';
+            } else if (config.category === 'Recipes') {
+                document.title = 'Nieuw Recept - Autom8';
+                if (pageTitle) pageTitle.textContent = 'Nieuw Recept';
+                if (pageIcon) pageIcon.textContent = 'restaurant';
+            }
+        }
+
+        // Debug functie om config te testen
+        async function debugConfig() {
+            const configPath = getConfigPath();
+            console.log('Config path:', configPath);
+            
             try {
-                controller = new ModulePageController('./config/conf.recipe.json');
+                const response = await fetch(configPath);
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const text = await response.text();
+                console.log('Raw response:', text);
+                
+                const config = JSON.parse(text);
+                console.log('Parsed config:', config);
+                
+                return config;
+            } catch (error) {
+                console.error('Debug config error:', error);
+                return null;
+            }
+        }
+
+        // Initialize module controller
+        async function initModule() {
+            try {
+                // Debug de config eerst
+                console.log('Starting debug config...');
+                await debugConfig();
+                
+                const configPath = getConfigPath();
+                console.log('Loading config from:', configPath);
+                
+                controller = new ModulePageController(configPath);
                 
                 const success = await controller.init();
+                console.log('Init success:', success);
+                
                 if (!success) {
-                    throw new Error('Recipe module initialisatie gefaald');
+                    throw new Error('Module initialisatie gefaald');
                 }
+
+                // Controleer of config geladen is
+                if (!controller.config) {
+                    console.error('Controller:', controller);
+                    console.error('Controller.framework:', controller.framework);
+                    console.error('Controller.framework.config:', controller.framework?.config);
+                    throw new Error('Configuratie niet geladen');
+                }
+
+                console.log('Config geladen:', controller.config);
+
+                // Update page voor de juiste categorie
+                updatePageForCategory(controller.config);
 
                 // Bepaal view op basis van URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
@@ -187,26 +177,43 @@
                     // Edit mode
                     controller.showEditView(editId);
                     
-                    // Update page title
-                    document.title = 'Recept bewerken - Autom8';
-                    const headerTitle = document.querySelector('.page-title h1');
-                    if (headerTitle) {
-                        headerTitle.textContent = 'Recept bewerken';
+                    // Update page title voor edit mode
+                    const pageTitle = document.getElementById('pageTitle');
+                    if (pageTitle) {
+                        if (controller.config.category === 'Grocery List') {
+                            pageTitle.textContent = 'Boodschappenlijst bewerken';
+                            document.title = 'Boodschappenlijst bewerken - Autom8';
+                        } else {
+                            pageTitle.textContent = 'Recept bewerken';
+                            document.title = 'Recept bewerken - Autom8';
+                        }
                     }
                 } else {
                     // Create mode
                     controller.showCreateView();
                 }
                 
-                console.log('Recipe module succesvol geïnitialiseerd');
+                console.log('Module succesvol geïnitialiseerd voor', controller.config.category);
             } catch (error) {
-                console.error('Recipe module initialisatie fout:', error);
+                console.error('Module initialisatie fout:', error);
+                
+                // Toon meer specifieke foutmelding
+                let errorMessage = 'Er is een fout opgetreden bij het laden van het formulier.';
+                if (error.message.includes('Configuratie niet geladen')) {
+                    errorMessage = 'Kan configuratie bestand niet laden. Controleer of het bestand bestaat.';
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('HTTP 404')) {
+                    errorMessage = 'Configuratie bestand niet gevonden. Maak eerst het conf.grocerylist.json bestand aan.';
+                } else if (error.message.includes('JSON')) {
+                    errorMessage = 'Configuratie bestand bevat ongeldige JSON.';
+                }
+                
                 document.getElementById('formContainer').innerHTML = `
                     <div class="error-state">
                         <h2>Fout bij laden</h2>
-                        <p>Er is een fout opgetreden bij het laden van het recept formulier.</p>
-                        <p><strong>Tip:</strong> Start een lokale webserver om CORS issues te vermijden.</p>
+                        <p>${errorMessage}</p>
+                        <p><small>Details: ${error.message}</small></p>
                         <button onclick="location.reload()">Opnieuw proberen</button>
+                        <button onclick="window.history.back()">Terug</button>
                     </div>
                 `;
             }
@@ -214,12 +221,21 @@
 
         // Setup event handlers
         function setupEventHandlers() {
-            // Override back button to go to recipes list
+            // Bepaal de terug-URL op basis van categorie
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            let backUrl = 'recipes.html'; // default
+            if (category === 'grocerylist') {
+                backUrl = 'recipes.html?category=grocerylist';
+            }
+
+            // Override back button
             const backButtons = document.querySelectorAll('.back-btn, .fab-secondary');
             backButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    window.location.href = 'recipes.html';
+                    window.location.href = backUrl;
                 });
             });
         }
@@ -227,7 +243,7 @@
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             setupEventHandlers();
-            initRecipeModule();
+            initModule();
         });
 
         // Legacy support voor oude callbacks (als nog ergens gebruikt)

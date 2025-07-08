@@ -85,7 +85,32 @@ class ModuleViewGenerator {
                     metaItem.className = 'meta-item';
                     
                     let value = item[field.name];
-                    if (field.type === 'number' && field.name.includes('time')) {
+                    
+                    // Handle different field types
+                    if (field.type === 'array') {
+                        // Voor array fields, toon de items als een leesbare lijst
+                        if (Array.isArray(value)) {
+                            if (field.name === 'items' && value.length > 0) {
+                                // Voor grocery list items, toon alleen de namen
+                                const itemNames = value.map(item => item.name || item).filter(name => name);
+                                if (itemNames.length > 0) {
+                                    value = `${itemNames.length} item${itemNames.length !== 1 ? 's' : ''}`;
+                                    // Optioneel: toon eerste paar items
+                                    if (itemNames.length <= 3) {
+                                        value = itemNames.join(', ');
+                                    } else {
+                                        value = `${itemNames.slice(0, 2).join(', ')} en ${itemNames.length - 2} meer`;
+                                    }
+                                } else {
+                                    value = 'Geen items';
+                                }
+                            } else {
+                                value = `${value.length} item${value.length !== 1 ? 's' : ''}`;
+                            }
+                        } else {
+                            value = 'Geen items';
+                        }
+                    } else if (field.type === 'number' && field.name.includes('time')) {
                         value = `${value} min`;
                     }
                     
@@ -202,6 +227,48 @@ class ModuleViewGenerator {
         if (field.type === 'textarea') {
             // Behoud line breaks voor textarea content
             content.innerHTML = value.replace(/\n/g, '<br>');
+        } else if (field.type === 'array') {
+            // Handle array fields
+            if (Array.isArray(value) && value.length > 0) {
+                const list = document.createElement('ul');
+                list.className = 'array-items-list';
+                
+                value.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'array-item-display';
+                    
+                    if (typeof item === 'object' && item.name) {
+                        // Voor grocery list items met naam en checked status
+                        const itemContent = document.createElement('div');
+                        itemContent.className = 'array-item-content';
+                        
+                        const checkbox = document.createElement('span');
+                        checkbox.className = 'array-item-checkbox';
+                        checkbox.textContent = item.checked ? '✅' : '☐';
+                        
+                        const name = document.createElement('span');
+                        name.className = 'array-item-name';
+                        name.textContent = item.name;
+                        if (item.checked) {
+                            name.style.textDecoration = 'line-through';
+                            name.style.opacity = '0.7';
+                        }
+                        
+                        itemContent.appendChild(checkbox);
+                        itemContent.appendChild(name);
+                        listItem.appendChild(itemContent);
+                    } else {
+                        // Voor eenvoudige string items
+                        listItem.textContent = item.toString();
+                    }
+                    
+                    list.appendChild(listItem);
+                });
+                
+                content.appendChild(list);
+            } else {
+                content.textContent = 'Geen items';
+            }
         } else if (field.type === 'select' && field.name === 'ingredients') {
             // Special handling voor ingredients (als het een array is)
             if (Array.isArray(value)) {

@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepten - Autom8</title>
+    <title>Items - Autom8</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="framework/framework.css">
     <link rel="stylesheet" href="recipes.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <meta name="theme-color" content="#FF5733">
+    <meta name="theme-color" content="#FF5733" id="themeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Autom8">
@@ -28,9 +28,9 @@
             <!-- Titel -->
             <div class="page-title">
                 <div class="page-icon">
-                    <span class="material-symbols-outlined">restaurant</span>
+                    <span class="material-symbols-outlined" id="pageIcon">restaurant</span>
                 </div>
-                <h1>Recepten</h1>
+                <h1 id="pageTitle">Items</h1>
             </div>
 
             <!-- Zoeken en filteren -->
@@ -41,7 +41,7 @@
                 <button class="header-btn search-btn" id="searchBtn" title="Zoeken">
                     <span class="material-symbols-outlined">search</span>
                 </button>
-                <button class="header-btn create-btn" id="createBtn" title="Nieuw recept">
+                <button class="header-btn create-btn" id="createBtn" title="Nieuw item">
                     <span class="material-symbols-outlined">add</span>
                 </button>
             </div>
@@ -57,7 +57,7 @@
         <!-- Loading state -->
         <div class="loading-state" id="loadingState" style="display: none;">
             <div class="loading-spinner"></div>
-            <p>Recepten worden geladen...</p>
+            <p id="loadingText">Items worden geladen...</p>
         </div>
 
         <!-- Main content container -->
@@ -67,7 +67,7 @@
     </main>
 
     <!-- Floating Action Button -->
-    <button class="fab" id="createFab" title="Nieuw recept toevoegen">
+    <button class="fab" id="createFab" title="Nieuw item toevoegen">
         <span class="material-symbols-outlined">add</span>
     </button>
 
@@ -76,136 +76,98 @@
     <script src="framework/ModuleViewGenerator.js"></script>
     <script src="framework/ModulePageController.js"></script>
 
-    <!-- Recipe Module Script -->
+    <!-- Module Script -->
     <script>
-        // Inline configuratie als fallback voor CORS issues
-        window.recipeConfig = {
-            "category": "Recipes",
-            "theme-color": "#FF5733",
-            "table": "recipes",
-            "storage-bucket": "recipes",
-            "fields": [
-                {
-                    "name": "name",
-                    "type": "text",
-                    "label": "Naam van het recept",
-                    "required": true,
-                    "placeholder": "Bijvoorbeeld: Spaghetti Carbonara"
-                },
-                {
-                    "name": "photo_url",
-                    "type": "image",
-                    "label": "Recept afbeelding",
-                    "required": false
-                },
-                {
-                    "name": "cooking_time",
-                    "type": "number",
-                    "label": "Bereidingstijd (minuten)",
-                    "required": false,
-                    "min": 1,
-                    "placeholder": "30"
-                },
-                {
-                    "name": "servings",
-                    "type": "number",
-                    "label": "Aantal personen",
-                    "required": true,
-                    "min": 1,
-                    "max": 20,
-                    "value": 4
-                },
-                { 
-                    "name": "course_type",
-                    "type": "select",
-                    "label": "Soort gerecht",
-                    "required": false,
-                    "options": [
-                        {
-                            "value": "voorgerecht",
-                            "label": "Voorgerecht"
-                        },
-                        {
-                            "value": "hoofdgerecht",
-                            "label": "Hoofdgerecht"
-                        },
-                        {
-                            "value": "bijgerecht",
-                            "label": "Bijgerecht"
-                        },
-                        {
-                            "value": "nagerecht",
-                            "label": "Nagerecht"
-                        },
-                        {
-                            "value": "snack",
-                            "label": "Snack"
-                        },
-                        {
-                            "value": "drank",
-                            "label": "Drank"
-                        }
-                    ]
-                },
-                {
-                    "name": "ingredients",
-                    "type": "textarea",
-                    "label": "Ingrediënten",
-                    "required": true,
-                    "placeholder": "Voer de ingrediënten in, elk op een nieuwe regel",
-                    "rows": 6
-                },
-                {
-                    "name": "steps",
-                    "type": "textarea",
-                    "label": "Bereidingswijze",
-                    "required": true,
-                    "placeholder": "Beschrijf de bereidingswijze stap voor stap",
-                    "rows": 8
-                },
-                {
-                    "name": "notes",
-                    "type": "textarea",
-                    "label": "Extra notities",
-                    "required": false,
-                    "placeholder": "Bijvoorbeeld: Tips, variaties, of bijzondere informatie...",
-                    "rows": 4
-                }
-            ]
-        };
-
         let controller;
 
-        // Initialize recipe controller
-        async function initRecipeModule() {
+        // Bepaal welke configuratie te gebruiken op basis van URL parameter
+        function getConfigPath() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            switch(category) {
+                case 'grocerylist':
+                    return './config/conf.grocerylist.json';
+                case 'recipe':
+                default:
+                    return './config/conf.recipe.json';
+            }
+        }
+
+        // Update page styling en titel op basis van categorie
+        function updatePageForCategory(config) {
+            // Update theme color
+            const themeColorMeta = document.getElementById('themeColor');
+            if (themeColorMeta && config['theme-color']) {
+                themeColorMeta.setAttribute('content', config['theme-color']);
+            }
+
+            // Update page title en icon
+            const pageTitle = document.getElementById('pageTitle');
+            const pageIcon = document.getElementById('pageIcon');
+            const loadingText = document.getElementById('loadingText');
+            
+            if (config.category === 'Grocery List') {
+                document.title = 'Boodschappenlijsten - Autom8';
+                if (pageTitle) pageTitle.textContent = 'Boodschappenlijsten';
+                if (pageIcon) pageIcon.textContent = 'shopping_cart';
+                if (loadingText) loadingText.textContent = 'Boodschappenlijsten worden geladen...';
+            } else if (config.category === 'Recipes') {
+                document.title = 'Recepten - Autom8';
+                if (pageTitle) pageTitle.textContent = 'Recepten';
+                if (pageIcon) pageIcon.textContent = 'restaurant';
+                if (loadingText) loadingText.textContent = 'Recepten worden geladen...';
+            }
+        }
+
+        // Initialize module controller
+        async function initModule() {
             try {
-                controller = new ModulePageController('./config/conf.recipe.json');
+                const configPath = getConfigPath();
+                controller = new ModulePageController(configPath);
                 
                 const success = await controller.init();
                 if (!success) {
-                    throw new Error('Recipe module initialisatie gefaald');
+                    throw new Error('Module initialisatie gefaald');
+                }
+
+                // Update page voor de juiste categorie
+                if (controller.config) {
+                    updatePageForCategory(controller.config);
                 }
 
                 // Setup callbacks voor navigatie
-                controller.framework.on('view', (recipe) => {
-                    window.location.href = `recipeDetail.html?id=${recipe.id}`;
+                const urlParams = new URLSearchParams(window.location.search);
+                const category = urlParams.get('category');
+                
+                controller.framework.on('view', (item) => {
+                    if (category === 'grocerylist') {
+                        // Voor grocery lists - eventueel een detail pagina maken later
+                        window.location.href = `createRecipe.html?category=grocerylist&edit=${item.id}`;
+                    } else {
+                        // Voor recipes
+                        window.location.href = `recipeDetail.html?id=${item.id}`;
+                    }
                 });
 
-                controller.framework.on('edit', (recipe) => {
-                    window.location.href = `createRecipe.html?edit=${recipe.id}`;
+                controller.framework.on('edit', (item) => {
+                    if (category === 'grocerylist') {
+                        window.location.href = `createRecipe.html?category=grocerylist&edit=${item.id}`;
+                    } else {
+                        window.location.href = `createRecipe.html?edit=${item.id}`;
+                    }
                 });
 
                 // Show lijst view
                 controller.showListView();
                 
-                console.log('Recipe module succesvol geïnitialiseerd');
+                console.log('Module succesvol geïnitialiseerd voor', controller.config.category);
             } catch (error) {
-                console.error('Recipe module initialisatie fout:', error);
+                console.error('Module initialisatie fout:', error);
                 document.getElementById('mainContent').innerHTML = `
                     <div class="error-state">
                         <h2>Fout bij laden</h2>
-                        <p>Er is een fout opgetreden bij het laden van de recepten.</p>
-                        <p><strong>Tip:</strong> Start een lokale webserver om CORS issues te vermijden.</p>
+                        <p>Er is een fout opgetreden bij het laden van de items.</p>
                         <button onclick="location.reload()">Opnieuw proberen</button>
                     </div>
                 `;
@@ -214,6 +176,15 @@
 
         // Setup additional event handlers
         function setupEventHandlers() {
+            // Bepaal de create URL op basis van categorie
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            let createUrl = 'createRecipe.html'; // default
+            if (category === 'grocerylist') {
+                createUrl = 'createRecipe.html?category=grocerylist';
+            }
+
             // Create button
             const createBtn = document.getElementById('createBtn');
             const createFab = document.getElementById('createFab');
@@ -221,7 +192,7 @@
             [createBtn, createFab].forEach(btn => {
                 if (btn) {
                     btn.addEventListener('click', () => {
-                        window.location.href = 'createRecipe.html';
+                        window.location.href = createUrl;
                     });
                 }
             });
@@ -262,7 +233,7 @@
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', () => {
             setupEventHandlers();
-            initRecipeModule();
+            initModule();
         });
 
         // Legacy support voor oude callbacks (als nog ergens gebruikt)
@@ -271,7 +242,14 @@
         };
 
         window.editRecipe = function(id) {
-            window.location.href = `createRecipe.html?edit=${id}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            if (category === 'grocerylist') {
+                window.location.href = `createRecipe.html?category=grocerylist&edit=${id}`;
+            } else {
+                window.location.href = `createRecipe.html?edit=${id}`;
+            }
         };
     </script>
 </body>

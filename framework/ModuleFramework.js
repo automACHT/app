@@ -227,6 +227,9 @@ class ModuleFramework {
             case 'image':
                 section.appendChild(this.createImageField(field));
                 break;
+            case 'array':
+                section.appendChild(this.createArrayField(field));
+                break;
             default:
                 console.warn(`Onbekend field type: ${field.type}`);
         }
@@ -396,6 +399,140 @@ class ModuleFramework {
     }
 
     /**
+     * Maak array field voor items zoals boodschappenlijst items
+     */
+    createArrayField(field) {
+        const container = document.createElement('div');
+        container.className = 'form-group array-field';
+
+        const label = document.createElement('label');
+        label.textContent = field.label + (field.required ? ' *' : '');
+
+        const arrayContainer = document.createElement('div');
+        arrayContainer.className = 'array-container';
+        arrayContainer.id = `${field.name}Container`;
+
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'array-items';
+        itemsContainer.id = `${field.name}Items`;
+
+        const addButton = document.createElement('button');
+        addButton.type = 'button';
+        addButton.className = 'add-array-item-btn';
+        addButton.innerHTML = `
+            <span class="material-symbols-outlined">add</span>
+            Item toevoegen
+        `;
+
+        addButton.addEventListener('click', () => {
+            this.addArrayItem(field, itemsContainer);
+        });
+
+        arrayContainer.appendChild(itemsContainer);
+        arrayContainer.appendChild(addButton);
+
+        container.appendChild(label);
+        container.appendChild(arrayContainer);
+
+        // Voeg een initieel item toe
+        this.addArrayItem(field, itemsContainer);
+
+        return container;
+    }
+
+    /**
+     * Voeg een item toe aan een array field
+     */
+    addArrayItem(field, itemsContainer) {
+        const itemContainer = document.createElement('div');
+        itemContainer.className = 'array-item';
+
+        const itemIndex = itemsContainer.children.length;
+
+        // Controleer of field.item en properties bestaan
+        if (!field.item || !field.item.properties) {
+            console.error('Array field missing item properties:', field);
+            const errorDiv = document.createElement('div');
+            errorDiv.textContent = 'Configuratie fout: Array field properties ontbreken';
+            errorDiv.style.color = 'red';
+            itemContainer.appendChild(errorDiv);
+            return;
+        }
+
+        // Maak inputs voor elke property van het item
+        Object.entries(field.item.properties).forEach(([propName, propConfig]) => {
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'array-item-input';
+
+            if (propConfig.type === 'text') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = `${field.name}[${itemIndex}].${propName}`;
+                input.placeholder = propConfig.placeholder || propConfig.label || propName;
+                input.className = 'array-item-text';
+                
+                inputGroup.appendChild(input);
+            } else if (propConfig.type === 'checkbox') {
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'checkbox-container';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = `${field.name}[${itemIndex}].${propName}`;
+                checkbox.id = `${field.name}_${itemIndex}_${propName}`;
+                
+                const checkboxLabel = document.createElement('label');
+                checkboxLabel.setAttribute('for', checkbox.id);
+                checkboxLabel.textContent = propConfig.label || propName;
+                
+                checkboxContainer.appendChild(checkbox);
+                checkboxContainer.appendChild(checkboxLabel);
+                inputGroup.appendChild(checkboxContainer);
+            }
+
+            itemContainer.appendChild(inputGroup);
+        });
+
+        // Remove button
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'remove-array-item-btn';
+        removeButton.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+        removeButton.title = 'Item verwijderen';
+
+        removeButton.addEventListener('click', () => {
+            itemContainer.remove();
+            this.updateArrayIndices(field.name, itemsContainer);
+        });
+
+        itemContainer.appendChild(removeButton);
+        itemsContainer.appendChild(itemContainer);
+    }
+
+    /**
+     * Update de indices van array items na verwijdering
+     */
+    updateArrayIndices(fieldName, itemsContainer) {
+        Array.from(itemsContainer.children).forEach((item, index) => {
+            const inputs = item.querySelectorAll('input');
+            inputs.forEach(input => {
+                const nameParts = input.name.split('.');
+                if (nameParts.length === 2) {
+                    const propName = nameParts[1];
+                    input.name = `${fieldName}[${index}].${propName}`;
+                    if (input.type === 'checkbox') {
+                        input.id = `${fieldName}_${index}_${propName}`;
+                        const label = item.querySelector(`label[for="${input.id}"]`);
+                        if (label) {
+                            label.setAttribute('for', input.id);
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    /**
      * Koppel events aan image fields
      */
     attachImageEvents(fieldName) {
@@ -491,29 +628,69 @@ class ModuleFramework {
      */
     populateForm(data) {
         this.config.fields.forEach(field => {
-            const element = document.getElementById(field.name);
-            if (element && data[field.name] !== undefined) {
-                if (field.type === 'image') {
-                    // Handle image field
-                    if (data[field.name]) {
-                        const preview = document.getElementById(`${field.name}Preview`);
-                        const placeholder = element.parentElement.querySelector('.image-placeholder');
-                        const previewContainer = element.parentElement.querySelector('.image-preview-container');
-                        
-                        if (preview) {
-                            preview.src = data[field.name];
-                            placeholder.style.display = 'none';
-                            previewContainer.style.display = 'block';
+            if (field.type === 'array') {
+                // Handle array fields
+                this.populateArrayField(field, data[field.name] || []);
+            } else {
+                const element = document.getElementById(field.name);
+                if (element && data[field.name] !== undefined) {
+                    if (field.type === 'image') {
+                        // Handle image field
+                        if (data[field.name]) {
+                            const preview = document.getElementById(`${field.name}Preview`);
+                            const placeholder = element.parentElement.querySelector('.image-placeholder');
+                            const previewContainer = element.parentElement.querySelector('.image-preview-container');
+                            
+                            if (preview) {
+                                preview.src = data[field.name];
+                                placeholder.style.display = 'none';
+                                previewContainer.style.display = 'block';
+                            }
                         }
+                    } else if (field.type === 'textarea' && (field.name === 'ingredients' || field.name === 'steps')) {
+                        // Handle JSONB array fields - convert to text
+                        element.value = this.jsonbArrayToText(data[field.name]);
+                    } else {
+                        element.value = data[field.name];
                     }
-                } else if (field.type === 'textarea' && (field.name === 'ingredients' || field.name === 'steps')) {
-                    // Handle JSONB array fields - convert to text
-                    element.value = this.jsonbArrayToText(data[field.name]);
-                } else {
-                    element.value = data[field.name];
                 }
             }
         });
+    }
+
+    /**
+     * Vul array field met data
+     */
+    populateArrayField(field, items) {
+        const itemsContainer = document.getElementById(`${field.name}Items`);
+        if (!itemsContainer) return;
+
+        // Leeg huidige items
+        itemsContainer.innerHTML = '';
+
+        // Voeg items toe
+        items.forEach((item, index) => {
+            this.addArrayItem(field, itemsContainer);
+            
+            // Vul de velden
+            if (field.item && field.item.properties) {
+                Object.entries(field.item.properties).forEach(([propName, propConfig]) => {
+                    const input = itemsContainer.querySelector(`input[name="${field.name}[${index}].${propName}"]`);
+                    if (input && item[propName] !== undefined) {
+                        if (propConfig.type === 'checkbox') {
+                            input.checked = item[propName];
+                        } else {
+                            input.value = item[propName];
+                        }
+                    }
+                });
+            }
+        });
+
+        // Zorg dat er altijd minimaal één leeg item is
+        if (items.length === 0) {
+            this.addArrayItem(field, itemsContainer);
+        }
     }
 
     /**
@@ -524,24 +701,62 @@ class ModuleFramework {
         const formData = {};
         
         this.config.fields.forEach(field => {
-            const element = document.getElementById(field.name);
-            if (element) {
-                if (field.type === 'image') {
-                    // Handle image file
-                    const file = element.files[0];
-                    if (file) {
-                        formData[field.name] = file;
+            if (field.type === 'array') {
+                // Handle array fields
+                formData[field.name] = this.getArrayFieldData(field);
+            } else {
+                const element = document.getElementById(field.name);
+                if (element) {
+                    if (field.type === 'image') {
+                        // Handle image file
+                        const file = element.files[0];
+                        if (file) {
+                            formData[field.name] = file;
+                        }
+                    } else if (field.type === 'textarea' && (field.name === 'ingredients' || field.name === 'steps')) {
+                        // Handle JSONB array fields - convert text to array
+                        formData[field.name] = this.textToJsonbArray(element.value);
+                    } else {
+                        formData[field.name] = element.value;
                     }
-                } else if (field.type === 'textarea' && (field.name === 'ingredients' || field.name === 'steps')) {
-                    // Handle JSONB array fields - convert text to array
-                    formData[field.name] = this.textToJsonbArray(element.value);
-                } else {
-                    formData[field.name] = element.value;
                 }
             }
         });
 
         return formData;
+    }
+
+    /**
+     * Haal array field data op
+     */
+    getArrayFieldData(field) {
+        const itemsContainer = document.getElementById(`${field.name}Items`);
+        if (!itemsContainer) return [];
+
+        const items = [];
+        Array.from(itemsContainer.children).forEach((itemContainer, index) => {
+            const item = {};
+            
+            if (field.item && field.item.properties) {
+                Object.entries(field.item.properties).forEach(([propName, propConfig]) => {
+                    const input = itemContainer.querySelector(`input[name="${field.name}[${index}].${propName}"]`);
+                    if (input) {
+                        if (propConfig.type === 'checkbox') {
+                            item[propName] = input.checked;
+                        } else {
+                            item[propName] = input.value;
+                        }
+                    }
+                });
+            }
+            
+            // Alleen toevoegen als het item niet leeg is
+            if (Object.values(item).some(value => value && value !== '')) {
+                items.push(item);
+            }
+        });
+
+        return items;
     }
 
     /**
@@ -554,8 +769,15 @@ class ModuleFramework {
 
         this.config.fields.forEach(field => {
             if (field.required) {
-                if (!data[field.name] || data[field.name] === '') {
-                    errors.push(`${field.label} is verplicht`);
+                if (field.type === 'array') {
+                    // Valideer array fields
+                    if (!data[field.name] || !Array.isArray(data[field.name]) || data[field.name].length === 0) {
+                        errors.push(`${field.label} is verplicht`);
+                    }
+                } else {
+                    if (!data[field.name] || data[field.name] === '') {
+                        errors.push(`${field.label} is verplicht`);
+                    }
                 }
             }
         });

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boodschappenlijst - Autom8</title>
+</head>
+<body>
+    <script>
+        // Redirect naar de generieke create pagina met grocery list categorie
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        
+        let redirectUrl = 'createRecipe.html?category=grocerylist';
+        if (editId) {
+            redirectUrl += '&edit=' + editId;
+        }
+        
+        window.location.href = redirectUrl;
+    </script>
+</body>
+</html>

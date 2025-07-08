@@ -611,6 +611,13 @@ class ModulePageController {
         if (mainContent) mainContent.style.display = 'block';
         if (searchContainer) searchContainer.style.display = 'block';
     }
+
+    /**
+     * Get de configuratie van het framework
+     */
+    get config() {
+        return this.framework?.config;
+    }
 }
 
 // Export voor gebruik in andere bestanden

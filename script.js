@@ -47,8 +47,7 @@ categoryCards.forEach(card => {
                 console.log('Kleding page not yet implemented');
                 break;
             case 'boodschappen':
-                // TODO: Create boodschappen page
-                console.log('Boodschappen page not yet implemented');
+                window.location.href = 'createRecipe.html?category=grocerylist';
                 break;
             case 'notities':
                 // TODO: Create notities page
@@ -96,8 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Kleding overview page not yet implemented');
                     break;
                 case 'boodschappen':
-                    // TODO: Create boodschappen overview page
-                    console.log('Boodschappen overview page not yet implemented');
+                    window.location.href = 'recipes.html?category=grocerylist';
+                    break;
+                case 'notities':
+                    // TODO: Create notities overview page
+                    console.log('Notities overview page not yet implemented');
                     break;
                 case 'notities':
                     // TODO: Create notities overview page
@@ -126,7 +128,7 @@ async function updateCategoryCounts() {
         
         // TODO: Add other category counts here when implemented
         // await updateKledingCount();
-        // await updateBoodschappenCount();
+        await updateGroceryListCount();
         // etc.
         
     } catch (error) {
@@ -177,6 +179,68 @@ async function updateRecipesCount() {
             valueSpan.textContent = 'Fout bij laden';
             valueSpan.style.color = 'var(--primary-color)';
             loadingSpan.style.display = 'none';
+            valueSpan.style.display = 'inline';
+        }
+    }
+}
+
+// New function to update grocery list count
+async function updateGroceryListCount() {
+    try {
+        // Check if we're on the right page
+        const groceryCard = document.querySelector('.category-card[data-category="boodschappen"] .item-count');
+        if (!groceryCard) {
+            return; // Not on home page
+        }
+        
+        const loadingSpan = groceryCard.querySelector('.count-loading');
+        const valueSpan = groceryCard.querySelector('.count-value');
+        
+        // Wait for supabase to be available
+        if (window.supabase) {
+            console.log('Fetching grocery lists count...');
+            
+            const { data: groceryLists, error } = await window.supabase
+                .from('grocery_list')
+                .select('id');
+
+            if (error) {
+                console.error('Error fetching grocery lists:', error);
+                throw error;
+            }
+
+            const count = groceryLists ? groceryLists.length : 0;
+            
+            if (valueSpan) {
+                // Update the text
+                valueSpan.textContent = `${count} ${count === 1 ? 'lijst' : 'lijsten'}`;
+                valueSpan.style.color = 'var(--text-primary)'; // Reset color
+                
+                // Hide loading, show value (if loading span exists)
+                if (loadingSpan) {
+                    loadingSpan.style.display = 'none';
+                }
+                valueSpan.style.display = 'inline';
+            }
+            
+            console.log(`Updated grocery lists count: ${count}`);
+        } else {
+            console.log('Supabase not yet available for grocery list count update');
+        }
+    } catch (error) {
+        console.error('Error updating grocery lists count:', error);
+        
+        // On error, hide loading and show error message
+        const groceryCard = document.querySelector('.category-card[data-category="boodschappen"] .item-count');
+        const loadingSpan = groceryCard?.querySelector('.count-loading');
+        const valueSpan = groceryCard?.querySelector('.count-value');
+        
+        if (valueSpan) {
+            valueSpan.textContent = 'Fout bij laden';
+            valueSpan.style.color = 'var(--primary-color)';
+            if (loadingSpan) {
+                loadingSpan.style.display = 'none';
+            }
             valueSpan.style.display = 'inline';
         }
     }
