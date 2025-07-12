@@ -4,6 +4,42 @@ const modal = document.getElementById('categoryModal');
 const modalOverlay = document.getElementById('modalOverlay');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 const categoryCards = document.querySelectorAll('.modal-category-card');
+const profileBtn = document.getElementById('profileBtn');
+
+// Authentication integration
+let authController = null;
+
+// Wait for auth controller to be ready
+function waitForAuthController() {
+    return new Promise((resolve) => {
+        if (window.AuthController) {
+            resolve(window.AuthController);
+        } else {
+            const checkAuth = () => {
+                if (window.AuthController) {
+                    resolve(window.AuthController);
+                } else {
+                    setTimeout(checkAuth, 100);
+                }
+            };
+            checkAuth();
+        }
+    });
+}
+
+// Initialize authentication integration
+async function initializeAuth() {
+    try {
+        authController = await waitForAuthController();
+        
+        // The auth controller automatically handles profile button behavior in updateUI()
+        // No need to manually add event listeners here
+        
+        console.log('✅ Authentication integrated with main script');
+    } catch (error) {
+        console.error('❌ Error integrating authentication:', error);
+    }
+}
 
 // Open modal when FAB is clicked
 addButton.addEventListener('click', () => {
@@ -265,6 +301,9 @@ function showCountError() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, starting count initialization...');
     initializeCounts();
+    
+    // Initialize authentication integration
+    initializeAuth();
 });
 
 // Listen for Supabase ready event for immediate response
@@ -315,3 +354,6 @@ window.refreshHomeCounts = function() {
 
 // Export the update function for use in other scripts
 window.updateCategoryCounts = updateCategoryCounts;
+
+// Initialize authentication integration
+initializeAuth();

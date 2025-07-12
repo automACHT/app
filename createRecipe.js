@@ -69,7 +69,7 @@ async function loadRecipeForEdit() {
 async function waitForSupabase() {
     let attempts = 0;
     while (attempts < 50) {
-        if (typeof getRecipeById === 'function' && window.supabase) {
+        if (typeof getRecipe === 'function' && window.supabaseReady) {
             return;
         }
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -78,21 +78,10 @@ async function waitForSupabase() {
     throw new Error('Supabase not available');
 }
 
-// Get recipe by ID
+// Get recipe by ID using the global wrapper function
 async function getRecipeById(id) {
     try {
-        const { data, error } = await supabase
-            .from('recipes')
-            .select('*')
-            .eq('id', id)
-            .single();
-            
-        if (error) {
-            console.error('Supabase error:', error);
-            return null;
-        }
-        
-        return data;
+        return await getRecipe(id);
     } catch (error) {
         console.error('Error fetching recipe:', error);
         return null;
@@ -391,13 +380,8 @@ async function saveRecipe() {
             
             console.log('Uploading photo:', fileName, 'File size:', file.size);
             
-            const photoResult = await RecipeService.uploadPhoto(file, fileName);
-            if (photoResult.success) {
-                photoUrl = photoResult.url;
-                console.log('Photo uploaded successfully:', photoUrl);
-            } else {
-                console.warn('Photo upload failed:', photoResult.error);
-            }
+            photoUrl = await uploadPhoto(file, fileName);
+            console.log('Photo uploaded successfully:', photoUrl);
         } else if (isEditMode && currentRecipe && currentRecipe.photo_url && photoPreview.src) {
             // Keep existing photo if preview is showing and no new photo was uploaded
             photoUrl = currentRecipe.photo_url;
@@ -425,19 +409,15 @@ async function saveRecipe() {
         let result;
         if (isEditMode && currentRecipe) {
             // Update recipe
-            result = await RecipeService.updateRecipe(currentRecipe.id, recipe);
+            result = await updateRecipe(currentRecipe.id, recipe);
         } else {
             // Save new recipe
-            result = await RecipeService.saveRecipe(recipe);
+            result = await saveRecipe(recipe);
         }
         
-        if (result.success) {
-            alert('Recept succesvol opgeslagen!');
-            // Navigate to recipes page
-            window.location.href = 'recipes.html';
-        } else {
-            throw new Error(result.error);
-        }
+        alert('Recept succesvol opgeslagen!');
+        // Navigate to recipes page
+        window.location.href = 'recipes.html';
         
     } catch (error) {
         console.error('Error saving recipe:', error);
